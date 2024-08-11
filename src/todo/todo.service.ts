@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
-import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoRepository } from './repo/todo.repository';
 import { Todo } from './entities/todo.entity';
 import { UserService } from 'src/user/user.service';
@@ -21,8 +20,7 @@ export class TodoService {
   async create(createTodoDto: CreateTodoDto, userId: number) {
     let todo: Todo = new Todo();
     todo.title = createTodoDto.title;
-    todo.date = new Date().toLocaleString();
-    todo.completed = false;
+    todo.date = new Date();
     todo.user = await this.userService.findUserById(userId);
     return this.todoRepository.save(todo);
   }
@@ -44,7 +42,7 @@ export class TodoService {
   }
 
   update(todoId: number) {
-    return this.todoRepository.update(todoId, { completed: true });
+    return this.todoRepository.update(todoId, { status: 'completed' });
   }
 
   remove(todoId: number) {

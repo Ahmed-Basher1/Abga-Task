@@ -8,12 +8,14 @@ export class Todo {
 
   @Column()
   title: string;
-
   @Column()
-  date: string;
+  description: string;
 
-  @Column()
-  completed: boolean;
+  @Column({ type: 'date' })
+  date: Date;
+
+  @Column({ enum: ['completed', 'pending'], default: 'pending' })
+  status: string;
 
   //   many todos can belong to single user
   @ManyToOne(() => User, (user) => user.todos)
