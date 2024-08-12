@@ -25,4 +25,12 @@ export class EmailService {
     await this.sendEmail(email, 'Forget Password', `Your OTP is ${otp}`);
     return otp;
   }
+
+  async SendTaskCompletionEmail(email: string, task: string) {
+    await this.sendEmail(email, 'Task Completed', `Your task ${task} is completed`);
+  }
+
+  async SendTaskCreationEmail(email: string, task: string) {
+    await this.sendEmail(email, 'Task Created', `Your task ${task} is created`);
+  }
 }

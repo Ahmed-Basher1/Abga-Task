@@ -1,3 +1,4 @@
+import { UserData } from 'src/user/dto/UserData.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 
@@ -19,5 +20,5 @@ export class Todo {
 
   //   many todos can belong to single user
   @ManyToOne(() => User, (user) => user.todos)
-  user: User;
+  user: UserData;
 }

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Constants } from 'src/utils/constants';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -9,6 +13,19 @@ export class UserService {
   constructor(private userRepository: UserRepository) {}
 
   create(createUserDto: CreateUserDto) {
+    let checkUser = this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+    if (checkUser) {
+      throw new BadRequestException('User Already Exists');
+    }
+    let checkUsername = this.userRepository.findOne({
+      where: { username: createUserDto.userName },
+    });
+    if (checkUsername) {
+      throw new BadRequestException('Username Already Exists');
+    }
+
     let user: User = new User();
     user.email = createUserDto.email;
     user.username = createUserDto.userName;
@@ -17,8 +34,11 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  findUserById(id: number) {
+  findUserById(id: string) {
     return this.userRepository.findOneOrFail({ where: { id: id } });
+  }
+  findUserByRole(role: string) {
+    return this.userRepository.findOne({ where: { role: role } });
   }
 
   findAll() {
@@ -29,7 +49,7 @@ export class UserService {
     return this.userRepository.findOne({ where: { email: email } });
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.userRepository.delete(id);
   }
 

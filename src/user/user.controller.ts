@@ -27,7 +27,7 @@ export class UserController {
   @Post('/signUp')
   @ApiSecurity('JWT-auth')
   @UseGuards(new RoleGuard(Constants.ROLES.ADMIN_ROLE))
-  create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
   @ApiSecurity('JWT-auth')
@@ -41,8 +41,7 @@ export class UserController {
   @Delete(':id')
   @UseGuards(new RoleGuard(Constants.ROLES.ADMIN_ROLE))
   remove(@Param('id') id: string, @Req() req) {
-    console.log(req.user);
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 
   @ApiSecurity('JWT-auth')
@@ -59,7 +58,6 @@ export class UserController {
   @ApiSecurity('JWT-auth')
   @Get('profile')
   profile(@Req() req) {
-    console.log(req.user);
     return this.userService.findUserById(req.user.userId);
   }
 }

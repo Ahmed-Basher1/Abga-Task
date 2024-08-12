@@ -3,6 +3,10 @@ import { CreateTodoDto } from './dto/create-todo.dto';
 import { TodoRepository } from './repo/todo.repository';
 import { Todo } from './entities/todo.entity';
 import { UserService } from 'src/user/user.service';
+import { EmailService } from 'src/email/email.service';
+import { User } from 'src/user/entities/user.entity';
+import { Constants } from 'src/utils/constants';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 
 // ADD TODO BASED ON USER ID
 // FIND ALL TODOS BASED ON USER ID (NOT COMPLETED)
@@ -15,34 +19,57 @@ export class TodoService {
   constructor(
     private todoRepository: TodoRepository,
     private userService: UserService,
+    private emailService: EmailService,
   ) {}
 
-  async create(createTodoDto: CreateTodoDto, userId: number) {
+  async create(createTodoDto: CreateTodoDto, userId: string) {
     let todo: Todo = new Todo();
     todo.title = createTodoDto.title;
+    todo.description = createTodoDto.description;
     todo.date = new Date();
     todo.user = await this.userService.findUserById(userId);
-    return this.todoRepository.save(todo);
+
+    await this.emailService.SendTaskCreationEmail(todo.user.email, todo.title);
+    this.todoRepository.save(todo);
+    return 'Todo Created Successfully';
   }
 
-  findAllTodoByUserNotCompleted(userId: number) {
+  findAllTodos(page: Number, limit: Number, status: string | undefined) {
     // userid not completed
     return this.todoRepository.find({
       relations: ['user'],
-      where: { user: { id: userId }, completed: false },
+      take: limit as number,
+      skip: ((page as number) - 1) * (limit as number),
+      ...(status && { where: { status } }),
     });
   }
-
-  findAllTodoByUserCompleted(userId: number) {
+  findAllTodosByUser(userId: string) {
     // userid not completed
     return this.todoRepository.find({
       relations: ['user'],
-      where: { user: { id: userId }, completed: true },
+      where: { user: { id: userId } },
     });
   }
 
-  update(todoId: number) {
-    return this.todoRepository.update(todoId, { status: 'completed' });
+  update(todoId: number, updateTodoDto: UpdateTodoDto) {
+    return this.todoRepository.update(todoId, { ...updateTodoDto });
+  }
+
+  async updateTodoAsCompleted(todoId: number, user: User) {
+    let admin = await this.userService.findUserByRole(
+      Constants.ROLES.ADMIN_ROLE,
+    );
+    if (admin) {
+      this.emailService.SendTaskCompletionEmail(admin.email, todoId.toString());
+    }
+
+    return this.todoRepository.update(
+      {
+        id: todoId,
+        user,
+      },
+      { status: 'completed' },
+    );
   }
 
   remove(todoId: number) {
