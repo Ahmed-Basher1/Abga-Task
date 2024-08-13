@@ -40,7 +40,7 @@ This project is an **Online Task Management System** built using NestJS. It cove
 
 ### 7. Database Integration
 
-- **PostgreSQL/MongoDB**: Supports PostgreSQL or MongoDB for data storage.
+- **PostgreSQL/MongoDB**: Supports PostgreSQL for data storage.
 - **Database Migrations**: Implements migrations for schema changes to ensure smooth updates.
 
 ### 8. Swagger Documentation
