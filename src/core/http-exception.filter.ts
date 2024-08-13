@@ -4,11 +4,16 @@ import {
   HttpStatus,
   ArgumentsHost,
   Catch,
-  Logger,
+  Inject,
 } from '@nestjs/common';
 
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
@@ -16,8 +21,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
-    console.log(exception);
-
     const errorResponse = {
       code: status,
       timestamp: new Date().toLocaleDateString(),
@@ -28,6 +31,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ? exception.message || null
           : 'Internal server error',
     };
+
+    this.logger.error(
+      `${request.method} ${request.url}`,
+      JSON.stringify(errorResponse),
+      'ExceptionFilter',
+    );
     response.status(status).json(errorResponse);
   }
 }

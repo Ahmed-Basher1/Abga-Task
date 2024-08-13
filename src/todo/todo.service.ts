@@ -43,8 +43,13 @@ export class TodoService {
       ...(status && { where: { status } }),
     });
   }
+  findTodoById(todoId: number, userId: string) {
+    return this.todoRepository.findOne({
+      relations: ['user'],
+      where: { id: todoId, user: { id: userId } },
+    });
+  }
   findAllTodosByUser(userId: string) {
-    // userid not completed
     return this.todoRepository.find({
       relations: ['user'],
       where: { user: { id: userId } },
@@ -63,13 +68,15 @@ export class TodoService {
       this.emailService.SendTaskCompletionEmail(admin.email, todoId.toString());
     }
 
-    return this.todoRepository.update(
+    this.todoRepository.update(
       {
         id: todoId,
         user,
       },
       { status: 'completed' },
     );
+
+    return 'Todo has been marked as completed';
   }
 
   remove(todoId: number) {

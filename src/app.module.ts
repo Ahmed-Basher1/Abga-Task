@@ -8,6 +8,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { CoreModule } from './core/core.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailService } from './email/email.service';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 // FIND ALL USERS
 // ADD USER
@@ -38,12 +40,36 @@ import { EmailService } from './email/email.service';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
       }),
     }),
+
+    // this is for rate limiting
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
         limit: 10,
       },
     ]),
+
+    // this is for logging
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.simple(),
+          ),
+        }),
+        new winston.transports.File({
+          filename: 'logs/error.log',
+          level: 'error',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }),
+      ],
+    }),
+
+    // this is for email service
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
